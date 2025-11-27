@@ -8,7 +8,6 @@ import { auth } from './firebase';
 import ItemCard from './components/ItemCard';
 import AddItemModal from './components/AddItemModal';
 import AuthModal from './components/AuthModal';
-import StatsBanner from './components/StatsBanner';
 import HeroSection from './components/HeroSection';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useItems } from './hooks/useItems';
@@ -118,8 +117,6 @@ export default function App() {
 
       <main className="max-w-4xl mx-auto p-4">
         {!user && <HeroSection onAction={handlePostClick} />}
-
-        <StatsBanner items={items} />
 
         {/* Search & Filter */}
         <div className="mb-6 space-y-3" id="items-grid">
