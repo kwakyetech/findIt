@@ -45,7 +45,7 @@ export const useItems = (user) => {
             return true;
         } catch (error) {
             console.error("Error adding item:", error);
-            toast.error("Failed to post item", { id: loadingToast });
+            toast.error(`Failed to post item: ${error.message}`, { id: loadingToast });
             return false;
         }
     };
