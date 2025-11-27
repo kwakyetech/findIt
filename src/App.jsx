@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, MapPin, LogOut, User as UserIcon, Shield } from 'lucide-react';
+import { Search, Plus, MapPin, LogOut, User as UserIcon, Shield, Settings } from 'lucide-react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Toaster } from 'react-hot-toast';
 
@@ -11,6 +11,7 @@ import AuthModal from './components/AuthModal';
 import HeroSection from './components/HeroSection';
 import LoadingSpinner from './components/LoadingSpinner';
 import AdminDashboard from './components/AdminDashboard';
+import UserSettings from './components/UserSettings';
 import { useItems } from './hooks/useItems';
 
 // Define Admin Emails
@@ -23,7 +24,7 @@ export default function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentView, setCurrentView] = useState('home'); // 'home' or 'admin'
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'admin', 'settings'
 
   // 1. Initialize Auth
   useEffect(() => {
@@ -104,6 +105,16 @@ export default function App() {
                   <UserIcon size={16} />
                   <span>{user.displayName || user.email}</span>
                 </div>
+
+                <button
+                  onClick={() => setCurrentView('settings')}
+                  className={`p-2 rounded-full transition-colors ${currentView === 'settings' ? 'bg-slate-200 text-slate-800' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                    }`}
+                  title="Settings"
+                >
+                  <Settings size={20} />
+                </button>
+
                 <button
                   onClick={handleLogout}
                   className="text-slate-500 hover:text-slate-800 p-2 rounded-full hover:bg-slate-100 transition-colors"
@@ -143,6 +154,11 @@ export default function App() {
           <AdminDashboard
             items={items}
             onDelete={deleteItem}
+            onBack={() => setCurrentView('home')}
+          />
+        ) : currentView === 'settings' ? (
+          <UserSettings
+            user={user}
             onBack={() => setCurrentView('home')}
           />
         ) : (
