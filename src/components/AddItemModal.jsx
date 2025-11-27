@@ -1,8 +1,28 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Image as ImageIcon, Trash2 } from 'lucide-react';
 
 const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
   if (!isOpen) return null;
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -15,6 +35,7 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
       category: formData.get('category'),
       contact: formData.get('contact'),
       date: formData.get('date'),
+      image: imageFile, // Pass the file object
     });
   };
 
@@ -27,7 +48,7 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
             <X size={20} />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {/* Form Fields */}
           <div className="grid grid-cols-2 gap-4">
@@ -61,6 +82,34 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
             <textarea name="description" rows="3" className="w-full p-2.5 rounded-lg border border-slate-300" required></textarea>
           </div>
 
+          {/* Image Upload Section */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Image (Optional)</label>
+            {!imagePreview ? (
+              <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 flex flex-col items-center justify-center text-slate-500 hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer relative">
+                <ImageIcon size={32} className="mb-2" />
+                <span className="text-sm">Click to upload image</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+            ) : (
+              <div className="relative rounded-lg overflow-hidden border border-slate-200">
+                <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 bg-white/90 p-1.5 rounded-full text-red-600 hover:bg-white shadow-sm transition-all"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
@@ -78,8 +127,8 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
           </div>
 
           <div className="pt-4">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isSubmitting}
               className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg disabled:opacity-50"
             >
