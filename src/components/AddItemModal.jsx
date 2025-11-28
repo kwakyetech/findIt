@@ -10,6 +10,10 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 500 * 1024) { // 500KB limit
+        alert("File is too large. Please upload an image under 500KB.");
+        return;
+      }
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -27,6 +31,11 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+
+    // If there's an image preview (Base64), use that.
+    // Note: In a real app with backend storage, you'd upload the file and get a URL.
+    // Here we are storing the Base64 string directly in Firestore (limited size).
+
     onSubmit({
       type: formData.get('type'),
       title: formData.get('title'),
@@ -35,7 +44,7 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
       category: formData.get('category'),
       contact: formData.get('contact'),
       date: formData.get('date'),
-      image: imageFile, // Pass the file object
+      image: imagePreview, // Use the Base64 string
     });
   };
 

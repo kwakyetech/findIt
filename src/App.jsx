@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 
 // Import our new separate components
 import { auth } from './firebase';
+import Navbar from './components/Navbar';
 import ItemCard from './components/ItemCard';
 import AddItemModal from './components/AddItemModal';
 import AuthModal from './components/AuthModal';
@@ -79,75 +80,15 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
       <Toaster position="bottom-right" />
 
-      {/* Navbar */}
-      <nav className="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 py-3 shadow-sm">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentView('home')}>
-            <MapPin className="text-blue-600" size={24} />
-            <h1 className="text-xl font-bold text-blue-600">FindIt</h1>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {user ? (
-              <div className="flex items-center gap-3">
-                {isAdmin && (
-                  <button
-                    onClick={() => setCurrentView('admin')}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${currentView === 'admin' ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100'
-                      }`}
-                  >
-                    <Shield size={16} />
-                    <span className="hidden sm:inline">Admin</span>
-                  </button>
-                )}
-
-                <div className="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
-                  <UserIcon size={16} />
-                  <span>{user.displayName || user.email}</span>
-                </div>
-
-                <button
-                  onClick={() => setCurrentView('settings')}
-                  className={`p-2 rounded-full transition-colors ${currentView === 'settings' ? 'bg-slate-200 text-slate-800' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
-                    }`}
-                  title="Settings"
-                >
-                  <Settings size={20} />
-                </button>
-
-                <button
-                  onClick={handleLogout}
-                  className="text-slate-500 hover:text-slate-800 p-2 rounded-full hover:bg-slate-100 transition-colors"
-                  title="Logout"
-                >
-                  <LogOut size={20} />
-                </button>
-                <button
-                  onClick={handlePostClick}
-                  className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-800 transition-all"
-                >
-                  <Plus size={18} /> Post Item
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="text-slate-600 font-medium text-sm hover:text-blue-600 px-3 py-2"
-                >
-                  Log In
-                </button>
-                <button
-                  onClick={handlePostClick}
-                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
-                >
-                  <Plus size={18} /> Post Item
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <Navbar
+        user={user}
+        isAdmin={isAdmin}
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        handleLogout={handleLogout}
+        handlePostClick={handlePostClick}
+        setIsAuthModalOpen={setIsAuthModalOpen}
+      />
 
       <main className="max-w-4xl mx-auto p-4">
         {currentView === 'admin' && isAdmin ? (
