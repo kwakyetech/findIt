@@ -16,6 +16,7 @@ import UserSettings from './components/UserSettings';
 import MapView from './components/MapView';
 import ChatList from './components/ChatList';
 import ChatWindow from './components/ChatWindow';
+import MatchingItemsModal from './components/MatchingItemsModal';
 import { useItems } from './hooks/useItems';
 
 // Define Admin Emails
@@ -42,8 +43,12 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  const [matches, setMatches] = useState([]);
+  const [isMatchingModalOpen, setIsMatchingModalOpen] = useState(false);
+  const [pendingItem, setPendingItem] = useState(null);
+
   // 2. Use Custom Hook for Data
-  const { items, loading, addItem, deleteItem } = useItems(user);
+  const { items, loading, addItem, deleteItem, findMatches } = useItems(user);
 
   // Check if user is admin
   const isAdmin = user && ADMIN_EMAILS.includes(user.email);
@@ -51,10 +56,72 @@ export default function App() {
   // 3. Handle Create Item
   const handleAddItem = async (itemData) => {
     setIsSubmitting(true);
+
+    // Check for matches first
+    const potentialMatches = await findMatches(itemData);
+
+    if (potentialMatches.length > 0) {
+      setMatches(potentialMatches);
+      setPendingItem(itemData);
+      setIsMatchingModalOpen(true);
+      setIsSubmitting(false);
+      setIsAddItemModalOpen(false); // Close add modal temporarily
+      return;
+    }
+
+    // No matches, proceed to add
+    await processAddItem(itemData);
+  };
+
+  const processAddItem = async (itemData) => {
+    setIsSubmitting(true);
     const success = await addItem(itemData);
     setIsSubmitting(false);
     if (success) {
       setIsAddItemModalOpen(false);
+      setIsMatchingModalOpen(false);
+      setPendingItem(null);
+    }
+  };
+
+  const handleMatchContact = async (matchItem) => {
+    // Logic to start chat with the match owner
+    // We can reuse the logic from ItemCard, but we need to access it here.
+    // Ideally, we should extract the chat creation logic to a helper or hook.
+    // For now, let's just navigate to messages and let the user find them? 
+    // No, we need to create the chat.
+
+    if (!user) return;
+
+    try {
+      const chatId = `${matchItem.id}_${user.uid}`;
+      const { setDoc, doc, serverTimestamp, getDoc } = await import('firebase/firestore');
+      const { db } = await import('./firebase');
+
+      const chatRef = doc(db, 'chats', chatId);
+      const chatSnap = await getDoc(chatRef);
+
+      if (!chatSnap.exists()) {
+        await setDoc(chatRef, {
+          participants: [user.uid, matchItem.authorId],
+          participantNames: {
+            [user.uid]: user.displayName || 'User',
+            [matchItem.authorId]: matchItem.authorName || 'User'
+          },
+          itemId: matchItem.id,
+          itemTitle: matchItem.title,
+          updatedAt: serverTimestamp(),
+          lastMessage: ''
+        });
+      }
+
+      setSelectedChatId(chatId);
+      setCurrentView('messages');
+      setIsMatchingModalOpen(false);
+      setPendingItem(null);
+    } catch (error) {
+      console.error("Error starting chat from match:", error);
+      alert("Failed to connect.");
     }
   };
 
@@ -219,6 +286,14 @@ export default function App() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+      />
+
+      <MatchingItemsModal
+        isOpen={isMatchingModalOpen}
+        onClose={() => setIsMatchingModalOpen(false)}
+        matches={matches}
+        onContact={handleMatchContact}
+        onPostAnyway={() => processAddItem(pendingItem)}
       />
     </div>
   );

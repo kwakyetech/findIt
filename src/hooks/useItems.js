@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, onSnapshot, query, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, serverTimestamp, deleteDoc, doc, getDocs, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { toast } from 'react-hot-toast';
 
@@ -64,5 +64,25 @@ export const useItems = (user) => {
         }
     };
 
-    return { items, loading, addItem, deleteItem };
+    const findMatches = async (newItem) => {
+        try {
+            const itemsRef = collection(db, 'lost-found-items');
+            // Look for opposite type (Lost <-> Found) in the same category
+            const targetType = newItem.type === 'lost' ? 'found' : 'lost';
+
+            const q = query(
+                itemsRef,
+                where('type', '==', targetType),
+                where('category', '==', newItem.category)
+            );
+
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (error) {
+            console.error("Error finding matches:", error);
+            return [];
+        }
+    };
+
+    return { items, loading, addItem, deleteItem, findMatches };
 };
