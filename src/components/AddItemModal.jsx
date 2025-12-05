@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { X, Image as ImageIcon, Trash2 } from 'lucide-react';
+import LocationPicker from './LocationPicker';
 
 const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [coordinates, setCoordinates] = useState(null);
 
   if (!isOpen) return null;
 
@@ -32,10 +34,6 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
     e.preventDefault();
     const formData = new FormData(e.target);
 
-    // If there's an image preview (Base64), use that.
-    // Note: In a real app with backend storage, you'd upload the file and get a URL.
-    // Here we are storing the Base64 string directly in Firestore (limited size).
-
     onSubmit({
       type: formData.get('type'),
       title: formData.get('title'),
@@ -44,7 +42,8 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
       category: formData.get('category'),
       contact: formData.get('contact'),
       date: formData.get('date'),
-      image: imagePreview, // Use the Base64 string
+      image: imagePreview,
+      coordinates: coordinates, // Include coordinates
     });
   };
 
@@ -91,6 +90,28 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
             <textarea name="description" rows="3" className="w-full p-2.5 rounded-lg border border-slate-300" required></textarea>
           </div>
 
+          {/* Location Picker */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Pin Location on Map</label>
+            <LocationPicker onLocationSelect={setCoordinates} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Location Name</label>
+              <input name="location" type="text" placeholder="e.g. Central Library" className="w-full p-2.5 rounded-lg border border-slate-300" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
+              <input name="date" type="date" className="w-full p-2.5 rounded-lg border border-slate-300" required />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Contact Info</label>
+            <input name="contact" type="text" className="w-full p-2.5 rounded-lg border border-slate-300" required />
+          </div>
+
           {/* Image Upload Section */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Image (Optional)</label>
@@ -117,22 +138,6 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
                 </button>
               </div>
             )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
-              <input name="location" type="text" className="w-full p-2.5 rounded-lg border border-slate-300" required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
-              <input name="date" type="date" className="w-full p-2.5 rounded-lg border border-slate-300" required />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Contact Info</label>
-            <input name="contact" type="text" className="w-full p-2.5 rounded-lg border border-slate-300" required />
           </div>
 
           <div className="pt-4">

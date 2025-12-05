@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, MapPin, LogOut, User as UserIcon, Shield, Settings } from 'lucide-react';
+import { Search, Plus, MapPin, LogOut, User as UserIcon, Shield, Settings, Map as MapIcon, Grid } from 'lucide-react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Toaster } from 'react-hot-toast';
 
@@ -13,6 +13,7 @@ import HeroSection from './components/HeroSection';
 import LoadingSpinner from './components/LoadingSpinner';
 import AdminDashboard from './components/AdminDashboard';
 import UserSettings from './components/UserSettings';
+import MapView from './components/MapView';
 import { useItems } from './hooks/useItems';
 
 // Define Admin Emails
@@ -26,6 +27,7 @@ export default function App() {
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentView, setCurrentView] = useState('home'); // 'home', 'admin', 'settings'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'map'
 
   // 1. Initialize Auth
   useEffect(() => {
@@ -118,16 +120,38 @@ export default function App() {
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-100 outline-none"
                 />
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => setFilter('all')} className={`px-4 py-1 rounded-full text-sm ${filter === 'all' ? 'bg-slate-800 text-white' : 'bg-white border'}`}>All</button>
-                <button onClick={() => setFilter('lost')} className={`px-4 py-1 rounded-full text-sm ${filter === 'lost' ? 'bg-red-600 text-white' : 'bg-white border'}`}>Lost</button>
-                <button onClick={() => setFilter('found')} className={`px-4 py-1 rounded-full text-sm ${filter === 'found' ? 'bg-green-600 text-white' : 'bg-white border'}`}>Found</button>
+              <div className="flex justify-between items-center">
+                <div className="flex gap-2">
+                  <button onClick={() => setFilter('all')} className={`px-4 py-1 rounded-full text-sm ${filter === 'all' ? 'bg-slate-800 text-white' : 'bg-white border'}`}>All</button>
+                  <button onClick={() => setFilter('lost')} className={`px-4 py-1 rounded-full text-sm ${filter === 'lost' ? 'bg-red-600 text-white' : 'bg-white border'}`}>Lost</button>
+                  <button onClick={() => setFilter('found')} className={`px-4 py-1 rounded-full text-sm ${filter === 'found' ? 'bg-green-600 text-white' : 'bg-white border'}`}>Found</button>
+                </div>
+
+                {/* View Toggle */}
+                <div className="flex bg-white rounded-lg border border-slate-200 p-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-slate-100 text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
+                    title="Grid View"
+                  >
+                    <Grid size={18} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className={`p-1.5 rounded-md transition-all ${viewMode === 'map' ? 'bg-slate-100 text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
+                    title="Map View"
+                  >
+                    <MapIcon size={18} />
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Grid */}
+            {/* Content Area */}
             {loading ? (
               <LoadingSpinner />
+            ) : viewMode === 'map' ? (
+              <MapView items={filteredItems} />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {filteredItems.length > 0 ? (
