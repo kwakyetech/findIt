@@ -26,6 +26,10 @@ const ItemCard = ({ item, isOwner, onDelete, currentUser, onChat }) => {
       if (!chatSnap.exists()) {
         await setDoc(chatRef, {
           participants: [currentUser.uid, item.authorId],
+          participantNames: {
+            [currentUser.uid]: currentUser.displayName || 'User',
+            [item.authorId]: item.authorName || 'User'
+          },
           itemId: item.id,
           itemTitle: item.title,
           updatedAt: serverTimestamp(),

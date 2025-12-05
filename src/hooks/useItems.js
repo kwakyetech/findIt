@@ -39,6 +39,7 @@ export const useItems = (user) => {
             await addDoc(itemsRef, {
                 ...itemData,
                 authorId: user.uid,
+                authorName: user.displayName || 'Anonymous',
                 createdAt: serverTimestamp(),
             });
             toast.success('Item posted successfully!', { id: loadingToast });
