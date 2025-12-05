@@ -3,7 +3,7 @@ import { MapPin, Calendar, Tag, Trash2, Mail, Image as ImageIcon, MessageSquare,
 import { setDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
-const ItemCard = ({ item, isOwner, onDelete, currentUser, onChat, onResolve }) => {
+const ItemCard = ({ item, isOwner, onDelete, currentUser, onChat, onUpdateStatus }) => {
   const isLost = item.type === 'lost';
   const isResolved = item.status === 'resolved';
 
@@ -120,22 +120,31 @@ const ItemCard = ({ item, isOwner, onDelete, currentUser, onChat, onResolve }) =
         </div>
 
         {isOwner ? (
-          !isResolved && (
-            <button
-              onClick={() => onResolve(item.id)}
-              className="w-full mt-auto flex items-center justify-center gap-2 py-2.5 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 text-sm font-medium transition-colors"
-            >
-              <CheckCircle size={16} />
-              Mark as Returned
-            </button>
-          )
+          <div className="flex gap-2 mt-auto">
+            {isResolved ? (
+              <button
+                onClick={() => onUpdateStatus(item.id, 'active')}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition-colors"
+              >
+                Undo (Mark Active)
+              </button>
+            ) : (
+              <button
+                onClick={() => onUpdateStatus(item.id, 'resolved')}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 text-sm font-medium transition-colors"
+              >
+                <CheckCircle size={16} />
+                Mark as Returned
+              </button>
+            )}
+          </div>
         ) : (
           <button
             onClick={handleContact}
             disabled={isResolved}
             className={`w-full mt-auto flex items-center justify-center gap-2 py-2.5 rounded-lg border text-sm font-medium transition-colors ${isResolved
-                ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'
-                : 'border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-600'
+              ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'
+              : 'border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-600'
               }`}
           >
             <MessageSquare size={16} />

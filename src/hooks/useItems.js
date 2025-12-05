@@ -84,20 +84,20 @@ export const useItems = (user) => {
         }
     };
 
-    const markAsResolved = async (itemId) => {
+    const updateItemStatus = async (itemId, newStatus) => {
         const loadingToast = toast.loading('Updating status...');
         try {
             const itemRef = doc(db, 'lost-found-items', itemId);
             await updateDoc(itemRef, {
-                status: 'resolved',
-                resolvedAt: serverTimestamp()
+                status: newStatus,
+                resolvedAt: newStatus === 'resolved' ? serverTimestamp() : null
             });
-            toast.success('Item marked as resolved', { id: loadingToast });
+            toast.success(`Item marked as ${newStatus}`, { id: loadingToast });
         } catch (error) {
-            console.error("Error marking as resolved:", error);
+            console.error("Error updating status:", error);
             toast.error("Failed to update status", { id: loadingToast });
         }
     };
 
-    return { items, loading, addItem, deleteItem, findMatches, markAsResolved };
+    return { items, loading, addItem, deleteItem, findMatches, updateItemStatus };
 };
