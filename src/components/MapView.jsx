@@ -2,7 +2,7 @@ import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { Link } from 'react-router-dom'; // Assuming we might want to link, but for now just a button or simple view
+
 
 // Fix for default marker icon
 import icon from 'leaflet/dist/images/marker-icon.png';
