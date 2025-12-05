@@ -4,6 +4,8 @@
 
 ![findIt Screenshot](https://via.placeholder.com/800x400?text=findIt+Dashboard)
 
+### 🔗 Live Demo: [https://findit-d3290.web.app/](https://findit-d3290.web.app/)
+
 ## 🚀 Features
 
 -   **User Authentication**: Secure Sign Up and Login using Firebase Auth.
