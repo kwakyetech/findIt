@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, MapPin, LogOut, User as UserIcon, Shield, Settings, Map as MapIcon, Grid } from 'lucide-react';
+import { Search, Plus, MapPin, LogOut, User as UserIcon, Shield, Settings, Map as MapIcon, Grid, MessageSquare } from 'lucide-react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Toaster } from 'react-hot-toast';
 
@@ -14,6 +14,8 @@ import LoadingSpinner from './components/LoadingSpinner';
 import AdminDashboard from './components/AdminDashboard';
 import UserSettings from './components/UserSettings';
 import MapView from './components/MapView';
+import ChatList from './components/ChatList';
+import ChatWindow from './components/ChatWindow';
 import { useItems } from './hooks/useItems';
 
 // Define Admin Emails
@@ -26,8 +28,9 @@ export default function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'admin', 'settings'
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'admin', 'settings', 'messages'
   const [viewMode, setViewMode] = useState('grid'); // 'grid', 'map'
+  const [selectedChatId, setSelectedChatId] = useState(null);
 
   // 1. Initialize Auth
   useEffect(() => {
@@ -92,7 +95,7 @@ export default function App() {
         setIsAuthModalOpen={setIsAuthModalOpen}
       />
 
-      <main className="max-w-4xl mx-auto p-4">
+      <main className="max-w-4xl mx-auto p-4 h-[calc(100vh-80px)]">
         {currentView === 'admin' && isAdmin ? (
           <AdminDashboard
             items={items}
@@ -104,8 +107,35 @@ export default function App() {
             user={user}
             onBack={() => setCurrentView('home')}
           />
+        ) : currentView === 'messages' ? (
+          <div className="flex h-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className={`${selectedChatId ? 'hidden md:block' : 'w-full'} md:w-1/3 border-r border-slate-200`}>
+              <div className="p-4 border-b border-slate-100 bg-slate-50">
+                <h2 className="font-bold text-slate-800">Messages</h2>
+              </div>
+              <ChatList
+                currentUser={user}
+                onSelectChat={setSelectedChatId}
+                selectedChatId={selectedChatId}
+              />
+            </div>
+            <div className={`${!selectedChatId ? 'hidden md:flex' : 'flex'} flex-1 flex-col`}>
+              {selectedChatId ? (
+                <ChatWindow
+                  chatId={selectedChatId}
+                  currentUser={user}
+                  onClose={() => setSelectedChatId(null)}
+                />
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-slate-400 bg-slate-50/50">
+                  <MessageSquare size={48} className="mb-4 opacity-20" />
+                  <p>Select a conversation to start chatting</p>
+                </div>
+              )}
+            </div>
+          </div>
         ) : (
-          <>
+          <div className="h-full overflow-y-auto">
             {!user && <HeroSection onAction={handlePostClick} />}
 
             {/* Search & Filter */}
@@ -153,7 +183,7 @@ export default function App() {
             ) : viewMode === 'map' ? (
               <MapView items={filteredItems} />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-20">
                 {filteredItems.length > 0 ? (
                   filteredItems.map(item => (
                     <ItemCard
@@ -161,6 +191,11 @@ export default function App() {
                       item={item}
                       isOwner={user && user.uid === item.authorId}
                       onDelete={deleteItem}
+                      currentUser={user}
+                      onChat={(chatId) => {
+                        setCurrentView('messages');
+                        setSelectedChatId(chatId);
+                      }}
                     />
                   ))
                 ) : (
@@ -170,7 +205,7 @@ export default function App() {
                 )}
               </div>
             )}
-          </>
+          </div>
         )}
       </main>
 

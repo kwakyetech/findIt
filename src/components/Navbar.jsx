@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, LogOut, User as UserIcon, Shield, Settings, Plus, LogIn } from 'lucide-react';
+import { MapPin, LogOut, User as UserIcon, Shield, Settings, Plus, LogIn, MessageSquare } from 'lucide-react';
 
 const Navbar = ({ user, isAdmin, currentView, setCurrentView, handleLogout, handlePostClick, setIsAuthModalOpen }) => {
     return (
@@ -24,8 +24,8 @@ const Navbar = ({ user, isAdmin, currentView, setCurrentView, handleLogout, hand
                                 <button
                                     onClick={() => setCurrentView('admin')}
                                     className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${currentView === 'admin'
-                                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-200'
-                                            : 'text-slate-600 hover:bg-slate-100'
+                                        ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-200'
+                                        : 'text-slate-600 hover:bg-slate-100'
                                         }`}
                                 >
                                     <Shield size={16} />
@@ -39,10 +39,21 @@ const Navbar = ({ user, isAdmin, currentView, setCurrentView, handleLogout, hand
                             </div>
 
                             <button
+                                onClick={() => setCurrentView('messages')}
+                                className={`p-2 rounded-full transition-all ${currentView === 'messages'
+                                    ? 'bg-blue-100 text-blue-600'
+                                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                                    }`}
+                                title="Messages"
+                            >
+                                <MessageSquare size={20} />
+                            </button>
+
+                            <button
                                 onClick={() => setCurrentView('settings')}
                                 className={`p-2 rounded-full transition-all ${currentView === 'settings'
-                                        ? 'bg-slate-200 text-slate-800'
-                                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                                    ? 'bg-slate-200 text-slate-800'
+                                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                                     }`}
                                 title="Settings"
                             >

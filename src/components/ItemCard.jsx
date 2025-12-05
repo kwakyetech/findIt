@@ -1,11 +1,43 @@
 import React from 'react';
-import { MapPin, Calendar, Tag, Trash2, Mail, Image as ImageIcon } from 'lucide-react';
+import { MapPin, Calendar, Tag, Trash2, Mail, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { setDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
-const ItemCard = ({ item, isOwner, onDelete }) => {
+const ItemCard = ({ item, isOwner, onDelete, currentUser, onChat }) => {
   const isLost = item.type === 'lost';
 
-  const handleContact = () => {
-    window.location.href = `mailto:${item.contact}?subject=Regarding: ${item.title}`;
+  const handleContact = async () => {
+    if (!currentUser) {
+      alert("Please log in to contact the owner.");
+      return;
+    }
+
+    // If it's the owner, maybe show a toast or do nothing
+    if (isOwner) return;
+
+    try {
+      // Check if a chat already exists between these two users for this item
+      // We'll use a composite ID for uniqueness: itemID_buyerID
+      const chatId = `${item.id}_${currentUser.uid}`;
+
+      const chatRef = doc(db, 'chats', chatId);
+      const chatSnap = await getDoc(chatRef);
+
+      if (!chatSnap.exists()) {
+        await setDoc(chatRef, {
+          participants: [currentUser.uid, item.authorId],
+          itemId: item.id,
+          itemTitle: item.title,
+          updatedAt: serverTimestamp(),
+          lastMessage: ''
+        });
+      }
+
+      onChat(chatId);
+    } catch (error) {
+      console.error("Error starting chat:", error);
+      alert("Failed to start chat.");
+    }
   };
 
   return (
@@ -71,13 +103,15 @@ const ItemCard = ({ item, isOwner, onDelete }) => {
           </div>
         </div>
 
-        <button
-          onClick={handleContact}
-          className="w-full mt-auto flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-600 text-sm font-medium transition-colors"
-        >
-          <Mail size={16} />
-          Contact Owner
-        </button>
+        {!isOwner && (
+          <button
+            onClick={handleContact}
+            className="w-full mt-auto flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-600 text-sm font-medium transition-colors"
+          >
+            <MessageSquare size={16} />
+            Message Owner
+          </button>
+        )}
       </div>
     </div>
   );
