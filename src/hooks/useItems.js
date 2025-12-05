@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, onSnapshot, query, serverTimestamp, deleteDoc, doc, getDocs, where } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, serverTimestamp, deleteDoc, doc, getDocs, where, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { toast } from 'react-hot-toast';
 
@@ -84,5 +84,20 @@ export const useItems = (user) => {
         }
     };
 
-    return { items, loading, addItem, deleteItem, findMatches };
+    const markAsResolved = async (itemId) => {
+        const loadingToast = toast.loading('Updating status...');
+        try {
+            const itemRef = doc(db, 'lost-found-items', itemId);
+            await updateDoc(itemRef, {
+                status: 'resolved',
+                resolvedAt: serverTimestamp()
+            });
+            toast.success('Item marked as resolved', { id: loadingToast });
+        } catch (error) {
+            console.error("Error marking as resolved:", error);
+            toast.error("Failed to update status", { id: loadingToast });
+        }
+    };
+
+    return { items, loading, addItem, deleteItem, findMatches, markAsResolved };
 };

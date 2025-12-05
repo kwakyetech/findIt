@@ -1,10 +1,11 @@
 import React from 'react';
-import { MapPin, Calendar, Tag, Trash2, Mail, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { MapPin, Calendar, Tag, Trash2, Mail, Image as ImageIcon, MessageSquare, CheckCircle } from 'lucide-react';
 import { setDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
-const ItemCard = ({ item, isOwner, onDelete, currentUser, onChat }) => {
+const ItemCard = ({ item, isOwner, onDelete, currentUser, onChat, onResolve }) => {
   const isLost = item.type === 'lost';
+  const isResolved = item.status === 'resolved';
 
   const handleContact = async () => {
     if (!currentUser) {
@@ -45,14 +46,25 @@ const ItemCard = ({ item, isOwner, onDelete, currentUser, onChat }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-slate-100 group flex flex-col h-full">
+    <div className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border ${isResolved ? 'border-green-200 bg-green-50/30' : 'border-slate-100'} group flex flex-col h-full relative`}>
+
+      {/* Resolved Overlay/Badge */}
+      {isResolved && (
+        <div className="absolute top-0 right-0 z-10 p-2">
+          <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm border border-green-200">
+            <CheckCircle size={14} />
+            RESOLVED
+          </div>
+        </div>
+      )}
+
       {/* Image Section */}
       <div className="relative h-48 bg-slate-100 overflow-hidden">
         {item.image ? (
           <img
             src={item.image}
             alt={item.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className={`w-full h-full object-cover transition-transform duration-500 ${isResolved ? 'grayscale' : 'group-hover:scale-105'}`}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
@@ -82,7 +94,7 @@ const ItemCard = ({ item, isOwner, onDelete, currentUser, onChat }) => {
       {/* Content Section */}
       <div className="p-5 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-lg text-slate-800 line-clamp-1" title={item.title}>
+          <h3 className={`font-bold text-lg line-clamp-1 ${isResolved ? 'text-slate-500 line-through' : 'text-slate-800'}`} title={item.title}>
             {item.title}
           </h3>
           <span className="text-xs text-slate-400 whitespace-nowrap mt-1">
@@ -107,13 +119,27 @@ const ItemCard = ({ item, isOwner, onDelete, currentUser, onChat }) => {
           </div>
         </div>
 
-        {!isOwner && (
+        {isOwner ? (
+          !isResolved && (
+            <button
+              onClick={() => onResolve(item.id)}
+              className="w-full mt-auto flex items-center justify-center gap-2 py-2.5 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 text-sm font-medium transition-colors"
+            >
+              <CheckCircle size={16} />
+              Mark as Returned
+            </button>
+          )
+        ) : (
           <button
             onClick={handleContact}
-            className="w-full mt-auto flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-600 text-sm font-medium transition-colors"
+            disabled={isResolved}
+            className={`w-full mt-auto flex items-center justify-center gap-2 py-2.5 rounded-lg border text-sm font-medium transition-colors ${isResolved
+                ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'
+                : 'border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-600'
+              }`}
           >
             <MessageSquare size={16} />
-            Message Owner
+            {isResolved ? 'Item Returned' : 'Message Owner'}
           </button>
         )}
       </div>

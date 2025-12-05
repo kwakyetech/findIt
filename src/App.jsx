@@ -48,7 +48,7 @@ export default function App() {
   const [pendingItem, setPendingItem] = useState(null);
 
   // 2. Use Custom Hook for Data
-  const { items, loading, addItem, deleteItem, findMatches } = useItems(user);
+  const { items, loading, addItem, deleteItem, findMatches, markAsResolved } = useItems(user);
 
   // Check if user is admin
   const isAdmin = user && ADMIN_EMAILS.includes(user.email);
@@ -258,6 +258,7 @@ export default function App() {
                       item={item}
                       isOwner={user && user.uid === item.authorId}
                       onDelete={deleteItem}
+                      onResolve={markAsResolved}
                       currentUser={user}
                       onChat={(chatId) => {
                         setCurrentView('messages');
