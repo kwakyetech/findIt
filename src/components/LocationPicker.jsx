@@ -20,7 +20,8 @@ L.Marker.prototype.options.icon = DefaultIcon;
 function LocationMarker({ position, setPosition }) {
     const map = useMapEvents({
         click(e) {
-            setPosition(e.latlng);
+            const { lat, lng } = e.latlng;
+            setPosition({ lat, lng });
             map.flyTo(e.latlng, map.getZoom());
         },
     });
